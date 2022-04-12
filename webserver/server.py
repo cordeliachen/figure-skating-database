@@ -199,9 +199,9 @@ def add():
 
 
 @app.route('/add', methods=['POST'])
-def search():
+def add():
   name=request.form['name']
-  cmd = 'SELECT * FROM SKATER WHERE name=:nm'
+  cmd = "SELECT * FROM SKATER WHERE name=:nm"
   cursor=g.conn.execute(text(cmd),nm=name)
   names = []
   for result in cursor:
