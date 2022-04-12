@@ -187,6 +187,7 @@ def do_admin_login():
 
 
 # Example of adding new data to the database
+'''
 @app.route('/add', methods=['POST'])
 def add():
   name = request.form['name']
@@ -194,6 +195,7 @@ def add():
   cmd = 'INSERT INTO test(name) VALUES (:name1), (:name2)'
   g.conn.execute(text(cmd), name1 = name, name2 = name)
   return redirect('/')
+'''
 
 
 @app.route('/')
