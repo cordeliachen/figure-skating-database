@@ -170,6 +170,7 @@ def index():
 # notice that the functio name is another() rather than index()
 # the functions for each app.route needs to have different names
 #
+'''
 @app.route('/')
 def home():
   if not session.get('logged_in'):
@@ -182,6 +183,7 @@ def do_admin_login():
   else:
     flash('wrong password!')
   return home()
+'''
 
 
 # Example of adding new data to the database
