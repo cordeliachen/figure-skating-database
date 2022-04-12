@@ -198,7 +198,7 @@ def add():
 '''
 
 
-@app.route('/')
+@app.route('/add', methods=['POST'])
 def search():
   name=request.form['name']
   cmd = 'SELECT * FROM SKATER WHERE name=:nm'
