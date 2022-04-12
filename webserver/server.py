@@ -18,7 +18,7 @@ Read about it online.
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
+from flask import Flask, request, render_template, g, redirect, Response, flash, session, abort
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -101,6 +101,7 @@ def teardown_request(exception):
 # see for routing: http://flask.pocoo.org/docs/0.10/quickstart/#routing
 # see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
 #
+'''
 @app.route('/')
 def index():
   """
@@ -160,7 +161,7 @@ def index():
   # for example, the below file reads template/index.html
   #
   return render_template("index.html", **context)
-
+  '''
 #
 # This is an example of a different path.  You can see it at
 # 
@@ -169,9 +170,18 @@ def index():
 # notice that the functio name is another() rather than index()
 # the functions for each app.route needs to have different names
 #
-@app.route('/another')
-def another():
-  return render_template("anotherfile.html")
+@app.route('/')
+def home():
+  if not session.get('logged_in'):
+    return render_template('login.html')
+
+@app.route('/login', methods=['POST'])
+def do_admin_login():
+  if request.form['password'] == 'password' and request.form['username'] == 'admin':
+    session['logged_in'] = True
+  else:
+    flash('wrong password!')
+  return home()
 
 
 # Example of adding new data to the database
@@ -179,16 +189,44 @@ def another():
 def add():
   name = request.form['name']
   print (name)
-  cmd = 'INSERT INTO test(name) VALUES (:name1), (:name2)';
-  g.conn.execute(text(cmd), name1 = name, name2 = name);
+  cmd = 'INSERT INTO test(name) VALUES (:name1), (:name2)'
+  g.conn.execute(text(cmd), name1 = name, name2 = name)
   return redirect('/')
 
 
-@app.route('/login')
-def login():
-    abort(401)
-    this_is_never_executed()
+@app.route('/')
+def search():
+  name=request.form['name']
+  cmd = 'SELECT * FROM SKATER WHERE name=:nm'
+  cursor=g.conn.execute(text(cmd),nm=name)
+  names = []
+  for result in cursor:
+    names.append(result)
+  cursor.close()
+  context = dict(data = names)
+  return render_template("index.html", **context)
 
+'''
+
+@app.route('/sort')
+def sort():
+  asc=true
+  element=request.form['element']
+  cmd='SELECT '
+
+@app.route('/favorite')
+def favorite():
+  skter=request.form['skater']
+  username=request.form['username']
+  cmd='INSERT INTO fan_favorites_skater VALUES (:user, :skater)'
+  g.conn.execute(cmd, user=username, skater=skter)
+  cursor=cmd2='SELECT Skater FROM fan_favorites_skater GROUP BY Skater ORDER BY sum(*) DESC LIMIT 1'
+  context=cursor[0]
+  return render_template("main.html", **context)
+
+
+
+'''
 
 if __name__ == "__main__":
   import click
@@ -210,7 +248,7 @@ if __name__ == "__main__":
         python server.py --help
 
     """
-
+    app.secret_key = os.urandom(12)
     HOST, PORT = host, port
     print ("running on %s:%d" % (HOST, PORT))
     app.run(host=HOST, port=PORT, debug=debug, threaded=threaded)
