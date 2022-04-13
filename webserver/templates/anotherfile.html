@@ -8,12 +8,11 @@
 
 
 <body>
-    <h1>Most favorited Skater</h1>
-    <div>{{data}}</div>
+    <h1>Current Most Favorited Skater Is</h1>
   
     <div>
       {% for n in data %}
-      <div>{{n}}</div>
+      <h2>{{n[0]}}</h2>
       {% endfor %}
     </div>
 
@@ -22,6 +21,19 @@
   Who do you love: <input type="text" name="skater"> 
   <input type="submit" value="Submit request" /></p>
 </form>
+<h3>Check Your Favorites</h3>
+<form method="POST" action="/favoritelist">
+  <p>Username: <input type="text" name="username">
+  <input type="submit" value="Submit request" /></p>
+</form>
+<div>
+  {% for key in list %}
+  <h2>{{key[0]}}</h2>
+    {% for upcoming in list[key] %}
+    <p>Upcoming competitions: {{upcoming}}</p>
+    {% endfor %}
+  {% endfor %}
+</div>
 </body>
 
 

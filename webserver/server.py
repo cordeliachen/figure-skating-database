@@ -107,7 +107,14 @@ def index():
 #
 @app.route('/another')
 def another():
-  return render_template("anotherfile.html")
+  cmd2='SELECT S.name FROM fan_favorites_skater F, Skater S WHERE S.skater_id=F.skater_id GROUP BY S.skater_id ORDER BY COUNT(*) DESC LIMIT 1'
+  cursor=g.conn.execute(text(cmd2))
+  faves=[]
+  for result in cursor:
+    faves.append(result)
+  cursor.close()
+  context = dict(data = faves)
+  return render_template("anotherfile.html", **context)
 '''
 @app.route('/')
 def home():
@@ -176,26 +183,44 @@ def favorite():
   cursor=g.conn.execute(text(cmd2))
   faves=[]
   for result in cursor:
-    faves.append(result)
+    faves.append(result[0][0])
   cursor.close()
   context = dict(data = faves)
   return render_template("anotherfile.html", **context)
   
+@app.route('/favoritelist', methods=['POST'])
+def generateList():
+  username=request.form['username']
+  cmd='SELECT S.name FROM Skater S, fan_favorites_skater F WHERE F.skater_id=S.skater_id and F.username=:user'
+  cursor=g.conn.execute(text(cmd), user=username)
+  faves={}
+  for result in cursor:
+    cmd2='SELECT C.comp_name, C.comp_year, C.comp_location FROM competition C, Skater S, skater_registeredfor_competition R WHERE S.name=:favorite AND S.skater_id=R.skater_id AND R.competition_id=C.competition_id'
+    cursor2=g.conn.execute(text(cmd2), favorite=result[0])
+    upcoming=[]
+    for x in cursor2:
+      upcoming.append(x)
+    faves[result]=upcoming
+
+  cursor.close()
+  context = dict(list = faves)
+  return render_template("anotherfile.html", **context)
+
 @app.route('/pollpicked', methods=['POST'])
 def makePick():
   competition=request.form['competition']
-  cmd2='SELECT C.competition_id from competition C where C.comp_name=:comp'
-  cursor=g.conn.execute(text(cmd2), comp=competition)
-  print(competition)
-  cmd0='SELECT S.name FROM Skater S, skater_registeredfor_competition R, competition C WHERE S.skater_id=R.skater_id and C.comp_name=:comp and C.competition_id=R.competition_id'
-  cursor=g.conn.execute(text(cmd0), comp=competition)
-  skaters=[]
+  cmd='SELECT DISTINCT S.discipline FROM Skater S, skater_registeredfor_competition R, competition C WHERE R.skater_id=S.skater_id and C.comp_name=:comp and C.competition_id=R.competition_id'
+  cursor=g.conn.execute(text(cmd), comp=competition)
+  disciplines=[]
   for result in cursor:
-    skaters.append(result[0])
+    disciplines.append(result[0])
   cursor.close()
-  context = dict(data = skaters)
-  return render_template("pick.html", **context)
+  context = dict(data = disciplines)
+  return render_template("pick.html", **context, competition=competition)
 '''
+cmd0='SELECT S.name FROM Skater S, skater_registeredfor_competition R, competition C WHERE S.skater_id=R.skater_id and C.comp_name=:comp and C.competition_id=R.competition_id'
+  cursor=g.conn.execute(text(cmd0), comp=competition)
+
 
   ids = []
   for result in cursor:
