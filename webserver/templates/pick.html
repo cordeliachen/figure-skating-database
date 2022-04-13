@@ -1,0 +1,23 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+  <form method="POST">
+  <h1>Who do you think is most likely to win:</h1>
+  <p>Username <input type="text" name="username"></p>
+  <SELECT name="skater">
+    {% for s in data %}
+        <OPTION value={{s}}>{{s}}</option>
+    {% endfor %}
+    </SELECT>
+    <input type="submit" value="Submit" />
+  </form>
+
+</body>
+</html>

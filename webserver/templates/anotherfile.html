@@ -1,1 +1,29 @@
-hello, I am another file!
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+    <h1>Most favorited Skater</h1>
+    <div>{{data}}</div>
+  
+    <div>
+      {% for n in data %}
+      <div>{{n}}</div>
+      {% endfor %}
+    </div>
+
+<form method="POST" action="/favorite">
+  <p>Who are you <input type="text" name="username">
+  Who do you love: <input type="text" name="skater"> 
+  <input type="submit" value="Submit request" /></p>
+</form>
+</body>
+
+
+</html>
+

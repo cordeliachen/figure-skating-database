@@ -1,0 +1,22 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+  <form method="POST" action="/pollpicked">
+  <h1>Who do you think is most likely to win:</h1>
+  <SELECT name="competition">
+    {% for c in data %}
+        <OPTION value={{c}}>{{c}}</option>
+    {% endfor %}
+    </SELECT>
+    <input type="submit" value="Submit" />
+  </form>
+
+</body>
+</html>
