@@ -132,7 +132,7 @@ def add():
   cursor=g.conn.execute(text(cmd),nm=name)
   names = []
   for result in cursor:
-    names.append(result)
+    names.append(result[0])
   cursor.close()
   context = dict(data = names)
   return render_template("index.html", **context)
@@ -143,7 +143,7 @@ def vote():
   polls=[]
   cursor=g.conn.execute(text(cmd0))
   for result in cursor:
-      polls.append(result)
+      polls.append(result[0])
   context = dict(data = polls)
   return render_template("poll.html", **context)
 
@@ -154,7 +154,7 @@ def sort():
   cursor=g.conn.execute(text(cmd),ele=element)
   rankings = []
   for result in cursor:
-    rankings.append(result)
+    rankings.append(result[0])
   cursor.close()
   context=dict(data=rankings)
   return render_template("rankings.html", **context)
@@ -191,7 +191,7 @@ def makePick():
   cursor=g.conn.execute(text(cmd0), comp=competition)
   skaters=[]
   for result in cursor:
-    skaters.append(result)
+    skaters.append(result[0])
   cursor.close()
   context = dict(data = skaters)
   return render_template("pick.html", **context)

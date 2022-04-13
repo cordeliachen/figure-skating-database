@@ -10,12 +10,13 @@
 <body>
   <form method="POST" action="/pollpicked">
   <h1>Who do you think is most likely to win:</h1>
-  <SELECT name="competition">
+  <input type="text" name="competition" list="pollList">
+  <datalist id="pollList">
     {% for c in data %}
-        <OPTION value={{c}}>{{c}}</option>
+        <OPTION type="text" value="{{c}}">{{c}}</option>
     {% endfor %}
-    </SELECT>
-    <input type="submit" value="Submit" />
+  </datalist>
+  <input type="submit" value="Submit" />
   </form>
 
 </body>
