@@ -128,12 +128,65 @@ def home():
 
 @app.route('/search', methods=('GET', 'POST'))
 def search():
-    skater_attributes = ['name', 'age', 'country', 'discipline']
-    competition_attributes = ['name', 'year', 'location']
+    skater_attributes = ['skater.name', 'skater.age',
+                         'skater.country', 'skater.discipline']
+    competition_attributes = ['competition.comp_name',
+                              'competition.comp_year', 'competition.comp_location']
+    if request.method == 'POST':
+        select = "SELECT "
+        frm = " FROM Skater, Competition, skater_scoresin_competition"
+        where = """ WHERE skater.skater_id = skater_scoresin_competition.skater_id and 
+        competition.competition_id = skater_scoresin_competition.competition_id"""
+
+        # modify SELECT
+        s = request.form.getlist('column')
+        print("YOOOO")
+        if not s:
+            select += "* "
+        else:
+            for i in range(len(s) - 1):
+                select += s[i] + ", "
+            select += s[-1]
+
+        # modify FROM
+
+        # modify WHERE
+        # filter skaters
+        selected_skaters = request.form['skaters'].split(", ")
+        print(len(selected_skaters))
+        if len(selected_skaters) > 1:
+            where += " and (skater.name = '" + selected_skaters[0] + "'"
+            for skater in selected_skaters[1:]:
+                where += " or skater.name = '" + skater + "'"
+            where += ")"
+
+        # filter competitons
+        print("fml")
+        selected_comps = request.form['comps'].split(", ")
+        print(len(selected_skaters))
+        if len(selected_comps) > 1:
+            where += " and (competition.comp_name = '" + \
+                selected_comps[0] + "'"
+            for comp in selected_comps[1:]:
+                where += " or competition.comp_name = '" + comp + "'"
+            where += ")"
+
+        query = select + frm + where
+        print(query)
+        results = g.conn.execute(query)
+
+        return render_template('searchresults.html', results=results)
+
     return render_template('search.html', skater_attributes=skater_attributes,
                            competition_attributes=competition_attributes)
 
 
+@app.route('/searchresults', methods=['POST'])
+def searchresults():
+
+    return render_template('searchresults.html')
+
+
 """
 `
 `
@@ -147,7 +200,7 @@ def search():
 """
 
 
-@app.route('/another')
+@ app.route('/another')
 def another():
     cmd2 = 'SELECT S.name FROM fan_favorites_skater F, Skater S WHERE S.skater_id=F.skater_id GROUP BY S.skater_id ORDER BY COUNT(*) DESC LIMIT 1'
     cursor = g.conn.execute(text(cmd2))
@@ -175,7 +228,7 @@ def do_admin_login():
 '''
 
 
-@app.route('/add', methods=['POST'])
+@ app.route('/add', methods=['POST'])
 def add():
     name = request.form['name']
     print(name)
@@ -189,7 +242,7 @@ def add():
     return render_template("index.html", **context)
 
 
-@app.route('/vote')
+@ app.route('/vote')
 def vote():
     cmd0 = 'SELECT c.comp_name FROM poll_predicts_competition p, competition c where p.competition_id=c.competition_id'
     polls = []
@@ -200,7 +253,7 @@ def vote():
     return render_template("poll.html", **context)
 
 
-@app.route('/sort', methods=['POST'])
+@ app.route('/sort', methods=['POST'])
 def sort():
     element = request.form['element']
     cmd = 'SELECT S.name, AVG(E.score) FROM Skater S, element E WHERE S.skater_id=E.skater_id and E.element_name=:ele GROUP BY S.skater_id ORDER BY AVG(E.score) DESC'
@@ -213,7 +266,7 @@ def sort():
     return render_template("rankings.html", **context)
 
 
-@app.route('/favorite', methods=['POST'])
+@ app.route('/favorite', methods=['POST'])
 def favorite():
     username = request.form['username']
     skater = request.form['skater']
@@ -235,7 +288,7 @@ def favorite():
     return render_template("anotherfile.html", **context)
 
 
-@app.route('/favoritelist', methods=['POST'])
+@ app.route('/favoritelist', methods=['POST'])
 def generateList():
     username = request.form['username']
     cmd = 'SELECT S.name FROM Skater S, fan_favorites_skater F WHERE F.skater_id=S.skater_id and F.username=:user'
@@ -254,7 +307,7 @@ def generateList():
     return render_template("anotherfile.html", **context)
 
 
-@app.route('/pollpicked', methods=['POST'])
+@ app.route('/pollpicked', methods=['POST'])
 def makePick():
     competition = request.form['competition']
     cmd = 'SELECT DISTINCT S.discipline FROM Skater S, skater_registeredfor_competition R, competition C WHERE R.skater_id=S.skater_id and C.comp_name=:comp and C.competition_id=R.competition_id'
@@ -276,7 +329,8 @@ cmd0='SELECT S.name FROM Skater S, skater_registeredfor_competition R, competiti
   for result in cursor:
     ids.append(result)
   cmd='INSERT INTO fan_votes_in_poll VALUES (:username, :poll, :sktr)'
-  g.conn.execute(text(cmd), username=username, poll=poll_id, sktr=str(ids[0][1]))
+  g.conn.execute(text(cmd), username=username,
+                 poll=poll_id, sktr=str(ids[0][1]))
   cmd='SELECT S.name, count(*) FROM fan_votes_in_poll F, Skater S WHERE F.poll_id=:poll AND F.skater_id=S.skater_id GROUP BY S.skater_id ORDER BY COUNT(*) DESC'
   cursor=g.conn.execute(text(cmd), poll=poll_id)
   poll_results = []
@@ -290,11 +344,11 @@ cmd0='SELECT S.name FROM Skater S, skater_registeredfor_competition R, competiti
 if __name__ == "__main__":
     import click
 
-    @click.command()
-    @click.option('--debug', is_flag=True)
-    @click.option('--threaded', is_flag=True)
-    @click.argument('HOST', default='0.0.0.0')
-    @click.argument('PORT', default=8111, type=int)
+    @ click.command()
+    @ click.option('--debug', is_flag=True)
+    @ click.option('--threaded', is_flag=True)
+    @ click.argument('HOST', default='0.0.0.0')
+    @ click.argument('PORT', default=8111, type=int)
     def run(debug, threaded, host, port):
         """
         This function handles command line parameters.
