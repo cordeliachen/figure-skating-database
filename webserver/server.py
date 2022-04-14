@@ -155,18 +155,27 @@ def sort():
 @app.route('/favorite', methods=['POST'])
 def favorite():
   username=request.form['username']
+  usercheck='SELECT * FROM fan F WHERE F.username=:user'
+  cursor=g.conn.execute(text(usercheck),user=username)
+  users=[]
+  for result in cursor:
+    users.append(result)
+  if len(users)==0:
+    context=dict(error="This is not a valid figure username!")
+    return render_template("anotherfile.html", **context)
   skater=request.form['skater']
   cmd0='SELECT S.skater_id FROM Skater S WHERE S.name=:skater'
   cursor=g.conn.execute(text(cmd0), skater=skater)
   ids = []
   for result in cursor:
     ids.append(result)
-
+  if len(ids)==0:
+    context=dict(error="This is not a valid figure skater name!")
+    return render_template("anotherfile.html", **context)
   cmd='INSERT INTO fan_favorites_skater VALUES (:user, :id)'
   try:
     g.conn.execute(text(cmd), user=username, id=str(ids[0])[1])
   except exc.SQLAlchemyError:
-    print("Error deteced")
     context=dict(error="This person is already in your favorites!")
     return render_template("anotherfile.html", **context)
   cmd2='SELECT S.name FROM fan_favorites_skater F, Skater S WHERE S.skater_id=F.skater_id GROUP BY S.skater_id ORDER BY COUNT(*) DESC LIMIT 1'
