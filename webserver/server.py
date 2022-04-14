@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-
+from sqlalchemy import exc
 """
 Columbia W4111 Intro to databases
 Example webserver
@@ -105,7 +105,7 @@ def index():
 # notice that the functio name is another() rather than index()
 # the functions for each app.route needs to have different names
 #
-@app.route('/another')
+@app.route('/fave')
 def another():
   cmd2='SELECT S.name FROM fan_favorites_skater F, Skater S WHERE S.skater_id=F.skater_id GROUP BY S.skater_id ORDER BY COUNT(*) DESC LIMIT 1'
   cursor=g.conn.execute(text(cmd2))
@@ -115,21 +115,6 @@ def another():
   cursor.close()
   context = dict(data = faves)
   return render_template("anotherfile.html", **context)
-'''
-@app.route('/')
-def home():
-  if not session.get('logged_in'):
-    return render_template('login.html')
-
-@app.route('/login', methods=['POST'])
-def do_admin_login():
-  if request.form['password'] == 'password' and request.form['username'] == 'admin':
-    session['logged_in'] = True
-  else:
-    flash('wrong password!')
-  return home()
-'''
-
 
 @app.route('/add', methods=['POST'])
 def add():
@@ -178,12 +163,17 @@ def favorite():
     ids.append(result)
 
   cmd='INSERT INTO fan_favorites_skater VALUES (:user, :id)'
-  g.conn.execute(text(cmd), user=username, id=str(ids[0])[1])
+  try:
+    g.conn.execute(text(cmd), user=username, id=str(ids[0])[1])
+  except exc.SQLAlchemyError:
+    print("Error deteced")
+    context=dict(error="This person is already in your favorites!")
+    return render_template("anotherfile.html", **context)
   cmd2='SELECT S.name FROM fan_favorites_skater F, Skater S WHERE S.skater_id=F.skater_id GROUP BY S.skater_id ORDER BY COUNT(*) DESC LIMIT 1'
   cursor=g.conn.execute(text(cmd2))
   faves=[]
   for result in cursor:
-    faves.append(result[0][0])
+    faves.append(result)
   cursor.close()
   context = dict(data = faves)
   return render_template("anotherfile.html", **context)
@@ -211,12 +201,17 @@ def makePick():
   competition=request.form['competition']
   cmd='SELECT DISTINCT S.discipline FROM Skater S, skater_registeredfor_competition R, competition C WHERE R.skater_id=S.skater_id and C.comp_name=:comp and C.competition_id=R.competition_id'
   cursor=g.conn.execute(text(cmd), comp=competition)
-  disciplines=[]
+  disciplines={}
   for result in cursor:
-    disciplines.append(result[0])
+    cmd2='SELECT S.name FROM competition C, Skater S, skater_registeredfor_competition R WHERE S.skater_id=R.skater_id AND R.competition_id=C.competition_id AND C.comp_name=:comp AND S.discipline=:discp'
+    cursor2=g.conn.execute(text(cmd2), comp=competition, discp=result[0])
+    skaters=[]
+    for x in cursor2:
+      skaters.append(x)
+    disciplines[result]=skaters
   cursor.close()
   context = dict(data = disciplines)
-  return render_template("pick.html", **context, competition=competition)
+  return render_template("pick.html", **context)
 '''
 cmd0='SELECT S.name FROM Skater S, skater_registeredfor_competition R, competition C WHERE S.skater_id=R.skater_id and C.comp_name=:comp and C.competition_id=R.competition_id'
   cursor=g.conn.execute(text(cmd0), comp=competition)
