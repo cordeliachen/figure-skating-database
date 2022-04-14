@@ -9,16 +9,13 @@
 
 <body>
   <form method="POST">
-  <h1>Pick a winner for each category:</h1>
+  <h1>Who do you think is most likely to win:</h1>
   <p>Username <input type="text" name="username"></p>
-    {% for key in data %}
-    <p> {{key[0]}} </p>
-      <select name="skaters">
-      {% for c in data[key] %} 
-        <OPTION type="text" value="{{c}}">{{c[0]}}</option>
-      {% endfor %}
-      </select>
+  <SELECT name="skater">
+    {% for s in data %}
+        <OPTION value={{s}}>{{s}}</option>
     {% endfor %}
+    </SELECT>
     <input type="submit" value="Submit" />
   </form>
 

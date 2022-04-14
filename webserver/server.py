@@ -18,14 +18,14 @@ Read about it online.
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
+from flask import Flask, request, render_template, g, redirect, Response, flash, session, abort
 
-tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+tmpl_dir = os.path.join(os.path.dirname(
+    os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
 
-
-# XXX: The Database URI should be in the format of: 
+# XXX: The Database URI should be in the format of:
 #
 #     postgresql://USER:PASSWORD@<IP_OF_POSTGRE_SQL_SERVER>/<DB_NAME>
 #
@@ -36,12 +36,13 @@ app = Flask(__name__, template_folder=tmpl_dir)
 # For your convenience, we already set it to the class database
 
 # Use the DB credentials you received by e-mail
-DB_USER = "YOUR_DB_USERNAME_HERE"
-DB_PASSWORD = "YOUR_DB_PASSWORD_HERE"
+DB_USER = "cc4655"
+DB_PASSWORD = "061602"
 
 DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 
-DATABASEURI = "postgresql://"+DB_USER+":"+DB_PASSWORD+"@"+DB_SERVER+"/w4111"
+DATABASEURI = "postgresql://"+DB_USER+":" + \
+    DB_PASSWORD+"@"+DB_SERVER+"/proj1part2"
 
 
 #
@@ -50,42 +51,34 @@ DATABASEURI = "postgresql://"+DB_USER+":"+DB_PASSWORD+"@"+DB_SERVER+"/w4111"
 engine = create_engine(DATABASEURI)
 
 
-# Here we create a test table and insert some values in it
-engine.execute("""DROP TABLE IF EXISTS test;""")
-engine.execute("""CREATE TABLE IF NOT EXISTS test (
-  id serial,
-  name text
-);""")
-engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
-
-
-
 @app.before_request
 def before_request():
-  """
-  This function is run at the beginning of every web request 
-  (every time you enter an address in the web browser).
-  We use it to setup a database connection that can be used throughout the request
+    """
+    This function is run at the beginning of every web request
+    (every time you enter an address in the web browser).
+    We use it to setup a database connection that can be used throughout the request
 
-  The variable g is globally accessible
-  """
-  try:
-    g.conn = engine.connect()
-  except:
-    print "uh oh, problem connecting to database"
-    import traceback; traceback.print_exc()
-    g.conn = None
+    The variable g is globally accessible
+    """
+    try:
+        g.conn = engine.connect()
+    except:
+        print("uh oh, problem connecting to database")
+        import traceback
+        traceback.print_exc()
+        g.conn = None
+
 
 @app.teardown_request
 def teardown_request(exception):
-  """
-  At the end of the web request, this makes sure to close the database connection.
-  If you don't the database could run out of memory!
-  """
-  try:
-    g.conn.close()
-  except Exception as e:
-    pass
+    """
+    At the end of the web request, this makes sure to close the database connection.
+    If you don't the database could run out of memory!
+    """
+    try:
+        g.conn.close()
+    except Exception as e:
+        pass
 
 
 #
@@ -97,123 +90,226 @@ def teardown_request(exception):
 #       @app.route("/foobar/", methods=["POST", "GET"])
 #
 # PROTIP: (the trailing / in the path is important)
-# 
+#
 # see for routing: http://flask.pocoo.org/docs/0.10/quickstart/#routing
 # see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
 #
+
 @app.route('/')
 def index():
-  """
-  request is a special object that Flask provides to access web request information:
-
-  request.method:   "GET" or "POST"
-  request.form:     if the browser submitted a form, this contains the data in the form
-  request.args:     dictionary of URL arguments e.g., {a:1, b:2} for http://localhost?a=1&b=2
-
-  See its API: http://flask.pocoo.org/docs/0.10/api/#incoming-request-data
-  """
-
-  # DEBUG: this is debugging code to see what request looks like
-  print request.args
-
-
-  #
-  # example of a database query
-  #
-  cursor = g.conn.execute("SELECT name FROM test")
-  names = []
-  for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
-  cursor.close()
-
-  #
-  # Flask uses Jinja templates, which is an extension to HTML where you can
-  # pass data to a template and dynamically generate HTML based on the data
-  # (you can think of it as simple PHP)
-  # documentation: https://realpython.com/blog/python/primer-on-jinja-templating/
-  #
-  # You can see an example template in templates/index.html
-  #
-  # context are the variables that are passed to the template.
-  # for example, "data" key in the context variable defined below will be 
-  # accessible as a variable in index.html:
-  #
-  #     # will print: [u'grace hopper', u'alan turing', u'ada lovelace']
-  #     <div>{{data}}</div>
-  #     
-  #     # creates a <div> tag for each element in data
-  #     # will print: 
-  #     #
-  #     #   <div>grace hopper</div>
-  #     #   <div>alan turing</div>
-  #     #   <div>ada lovelace</div>
-  #     #
-  #     {% for n in data %}
-  #     <div>{{n}}</div>
-  #     {% endfor %}
-  #
-  context = dict(data = names)
-
-
-  #
-  # render_template looks in the templates/ folder for files.
-  # for example, the below file reads template/index.html
-  #
-  return render_template("index.html", **context)
-
+    return render_template("index.html")
 #
 # This is an example of a different path.  You can see it at
-# 
+#
 #     localhost:8111/another
 #
 # notice that the functio name is another() rather than index()
 # the functions for each app.route needs to have different names
 #
+
+
+"""
+`
+`
+`
+`
+`
+`
+`
+`
+`
+"""
+
+
+@app.route('/home', methods=('GET', 'POST'))
+def home():
+    return render_template('index.html')
+
+
+@app.route('/search', methods=('GET', 'POST'))
+def search():
+    skater_attributes = ['name', 'age', 'country', 'discipline']
+    competition_attributes = ['name', 'year', 'location']
+    return render_template('search.html', skater_attributes=skater_attributes,
+                           competition_attributes=competition_attributes)
+
+
+"""
+`
+`
+`
+`
+`
+`
+`
+`
+`
+"""
+
+
 @app.route('/another')
 def another():
-  return render_template("anotherfile.html")
+    cmd2 = 'SELECT S.name FROM fan_favorites_skater F, Skater S WHERE S.skater_id=F.skater_id GROUP BY S.skater_id ORDER BY COUNT(*) DESC LIMIT 1'
+    cursor = g.conn.execute(text(cmd2))
+    faves = []
+    for result in cursor:
+        faves.append(result)
+    cursor.close()
+    context = dict(data=faves)
+    return render_template("anotherfile.html", **context)
 
 
-# Example of adding new data to the database
+'''
+@app.route('/')
+def home():
+  if not session.get('logged_in'):
+    return render_template('login.html')
+
+@app.route('/login', methods=['POST'])
+def do_admin_login():
+  if request.form['password'] == 'password' and request.form['username'] == 'admin':
+    session['logged_in'] = True
+  else:
+    flash('wrong password!')
+  return home()
+'''
+
+
 @app.route('/add', methods=['POST'])
 def add():
-  name = request.form['name']
-  print name
-  cmd = 'INSERT INTO test(name) VALUES (:name1), (:name2)';
-  g.conn.execute(text(cmd), name1 = name, name2 = name);
-  return redirect('/')
+    name = request.form['name']
+    print(name)
+    cmd = 'SELECT * FROM SKATER S WHERE S.name=:nm'
+    cursor = g.conn.execute(text(cmd), nm=name)
+    names = []
+    for result in cursor:
+        names.append(result[0])
+    cursor.close()
+    context = dict(data=names)
+    return render_template("index.html", **context)
 
 
-@app.route('/login')
-def login():
-    abort(401)
-    this_is_never_executed()
+@app.route('/vote')
+def vote():
+    cmd0 = 'SELECT c.comp_name FROM poll_predicts_competition p, competition c where p.competition_id=c.competition_id'
+    polls = []
+    cursor = g.conn.execute(text(cmd0))
+    for result in cursor:
+        polls.append(result[0])
+    context = dict(data=polls)
+    return render_template("poll.html", **context)
+
+
+@app.route('/sort', methods=['POST'])
+def sort():
+    element = request.form['element']
+    cmd = 'SELECT S.name, AVG(E.score) FROM Skater S, element E WHERE S.skater_id=E.skater_id and E.element_name=:ele GROUP BY S.skater_id ORDER BY AVG(E.score) DESC'
+    cursor = g.conn.execute(text(cmd), ele=element)
+    rankings = []
+    for result in cursor:
+        rankings.append(result[0])
+    cursor.close()
+    context = dict(data=rankings)
+    return render_template("rankings.html", **context)
+
+
+@app.route('/favorite', methods=['POST'])
+def favorite():
+    username = request.form['username']
+    skater = request.form['skater']
+    cmd0 = 'SELECT S.skater_id FROM Skater S WHERE S.name=:skater'
+    cursor = g.conn.execute(text(cmd0), skater=skater)
+    ids = []
+    for result in cursor:
+        ids.append(result)
+
+    cmd = 'INSERT INTO fan_favorites_skater VALUES (:user, :id)'
+    g.conn.execute(text(cmd), user=username, id=str(ids[0])[1])
+    cmd2 = 'SELECT S.name FROM fan_favorites_skater F, Skater S WHERE S.skater_id=F.skater_id GROUP BY S.skater_id ORDER BY COUNT(*) DESC LIMIT 1'
+    cursor = g.conn.execute(text(cmd2))
+    faves = []
+    for result in cursor:
+        faves.append(result[0][0])
+    cursor.close()
+    context = dict(data=faves)
+    return render_template("anotherfile.html", **context)
+
+
+@app.route('/favoritelist', methods=['POST'])
+def generateList():
+    username = request.form['username']
+    cmd = 'SELECT S.name FROM Skater S, fan_favorites_skater F WHERE F.skater_id=S.skater_id and F.username=:user'
+    cursor = g.conn.execute(text(cmd), user=username)
+    faves = {}
+    for result in cursor:
+        cmd2 = 'SELECT C.comp_name, C.comp_year, C.comp_location FROM competition C, Skater S, skater_registeredfor_competition R WHERE S.name=:favorite AND S.skater_id=R.skater_id AND R.competition_id=C.competition_id'
+        cursor2 = g.conn.execute(text(cmd2), favorite=result[0])
+        upcoming = []
+        for x in cursor2:
+            upcoming.append(x)
+        faves[result] = upcoming
+
+    cursor.close()
+    context = dict(list=faves)
+    return render_template("anotherfile.html", **context)
+
+
+@app.route('/pollpicked', methods=['POST'])
+def makePick():
+    competition = request.form['competition']
+    cmd = 'SELECT DISTINCT S.discipline FROM Skater S, skater_registeredfor_competition R, competition C WHERE R.skater_id=S.skater_id and C.comp_name=:comp and C.competition_id=R.competition_id'
+    cursor = g.conn.execute(text(cmd), comp=competition)
+    disciplines = []
+    for result in cursor:
+        disciplines.append(result[0])
+    cursor.close()
+    context = dict(data=disciplines)
+    return render_template("pick.html", **context)
+
+
+'''
+cmd0='SELECT S.name FROM Skater S, skater_registeredfor_competition R, competition C WHERE S.skater_id=R.skater_id and C.comp_name=:comp and C.competition_id=R.competition_id'
+  cursor=g.conn.execute(text(cmd0), comp=competition)
+
+
+  ids = []
+  for result in cursor:
+    ids.append(result)
+  cmd='INSERT INTO fan_votes_in_poll VALUES (:username, :poll, :sktr)'
+  g.conn.execute(text(cmd), username=username, poll=poll_id, sktr=str(ids[0][1]))
+  cmd='SELECT S.name, count(*) FROM fan_votes_in_poll F, Skater S WHERE F.poll_id=:poll AND F.skater_id=S.skater_id GROUP BY S.skater_id ORDER BY COUNT(*) DESC'
+  cursor=g.conn.execute(text(cmd), poll=poll_id)
+  poll_results = []
+  for result in cursor:
+    poll_results.append(result)
+  cursor.close()
+  context = dict(data = poll_results)
+'''
 
 
 if __name__ == "__main__":
-  import click
+    import click
 
-  @click.command()
-  @click.option('--debug', is_flag=True)
-  @click.option('--threaded', is_flag=True)
-  @click.argument('HOST', default='0.0.0.0')
-  @click.argument('PORT', default=8111, type=int)
-  def run(debug, threaded, host, port):
-    """
-    This function handles command line parameters.
-    Run the server using
+    @click.command()
+    @click.option('--debug', is_flag=True)
+    @click.option('--threaded', is_flag=True)
+    @click.argument('HOST', default='0.0.0.0')
+    @click.argument('PORT', default=8111, type=int)
+    def run(debug, threaded, host, port):
+        """
+        This function handles command line parameters.
+        Run the server using
 
-        python server.py
+            python server.py
 
-    Show the help text using
+        Show the help text using
 
-        python server.py --help
+            python server.py --help
 
-    """
+        """
+        app.secret_key = os.urandom(12)
+        HOST, PORT = host, port
+        print("running on %s:%d" % (HOST, PORT))
+        app.run(host=HOST, port=PORT, debug=debug, threaded=threaded)
 
-    HOST, PORT = host, port
-    print "running on %s:%d" % (HOST, PORT)
-    app.run(host=HOST, port=PORT, debug=debug, threaded=threaded)
-
-
-  run()
+    run()
