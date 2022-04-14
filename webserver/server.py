@@ -154,7 +154,8 @@ def search():
         # filter skaters
         selected_skaters = request.form['skaters'].split(", ")
         print(len(selected_skaters))
-        if len(selected_skaters) > 1:
+        print(selected_skaters[0])
+        if selected_skaters[0] != "":
             where += " and (skater.name = '" + selected_skaters[0] + "'"
             for skater in selected_skaters[1:]:
                 where += " or skater.name = '" + skater + "'"
@@ -163,12 +164,46 @@ def search():
         # filter competitons
         print("fml")
         selected_comps = request.form['comps'].split(", ")
-        print(len(selected_skaters))
-        if len(selected_comps) > 1:
+        print(len(selected_comps))
+        print(selected_comps[0])
+        if selected_comps[0] != "":
             where += " and (competition.comp_name = '" + \
                 selected_comps[0] + "'"
             for comp in selected_comps[1:]:
                 where += " or competition.comp_name = '" + comp + "'"
+            where += ")"
+
+        # filter countries
+        print("fml 2.0")
+        selected_countries = request.form['countries'].split(", ")
+        print(len(selected_countries))
+        print(selected_comps[0])
+        if selected_countries[0] != "":
+            where += " and (skater.country = '" + selected_countries[0] + "'"
+            for country in selected_countries[1:]:
+                where += " or skater.country = '" + country + "'"
+            where += ")"
+
+        # filter years
+        print("fml 2.0")
+        selected_years = request.form['years'].split(", ")
+        print(len(selected_years))
+        print(selected_years[0])
+        if selected_years[0] != "":
+            where += " and (competition.comp_year = '" + \
+                selected_years[0] + "'"
+            for year in selected_years[1:]:
+                where += " or competition.comp_year = '" + year + "'"
+            where += ")"
+
+        # filter disciplines
+        selected_disciplines = request.form.getlist('disciplines')
+        print("YOOOO")
+        if selected_disciplines:
+            where += " and (skater.discipline = '" + \
+                selected_disciplines[0] + "'"
+            for discipline in selected_disciplines[1:]:
+                where += " or skater.discipline = '" + discipline + "'"
             where += ")"
 
         query = select + frm + where
