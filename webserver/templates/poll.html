@@ -9,7 +9,7 @@
 
 <body>
   <form method="POST" action="/pollpicked">
-  <h1>Who do you think is most likely to win:</h1>
+  <h1>Pick a competition to predict:</h1>
   <input type="text" name="competition" list="pollList">
   <datalist id="pollList">
     {% for c in data %}
