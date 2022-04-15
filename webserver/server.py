@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+from sqlalchemy import exc
 
 """
 Columbia W4111 Intro to databases
@@ -296,21 +297,6 @@ def vote():
   context = dict(data = polls)
   return render_template("poll.html", **context)
 
-'''
-@app.route('/')
-def home():
-  if not session.get('logged_in'):
-    return render_template('login.html')
-
-@app.route('/login', methods=['POST'])
-def do_admin_login():
-  if request.form['password'] == 'password' and request.form['username'] == 'admin':
-    session['logged_in'] = True
-  else:
-    flash('wrong password!')
-  return home()
-'''
-
 
 
 
@@ -327,25 +313,33 @@ def sort():
     return render_template("rankings.html", **context)
 
 
-@ app.route('/favorite', methods=['POST'])
+@app.route('/favorite', methods=['POST'])
 def favorite():
-    username = request.form['username']
-    skater = request.form['skater']
-    cmd0 = 'SELECT S.skater_id FROM Skater S WHERE S.name=:skater'
-    cursor = g.conn.execute(text(cmd0), skater=skater)
-    ids = []
-    for result in cursor:
-        ids.append(result)
+  username=request.form['username']
+  usercheck='SELECT * FROM fan F WHERE F.username=:user'
+  cursor=g.conn.execute(text(usercheck),user=username)
+  users=[]
+  for result in cursor:
+    users.append(result)
+  if len(users)==0:
+    context=dict(error="This is not a valid username!")
+    return render_template("anotherfile.html", **context)
+  skater=request.form['skater']
+  cmd0='SELECT S.skater_id FROM Skater S WHERE S.name=:skater'
+  cursor=g.conn.execute(text(cmd0), skater=skater)
+  ids = []
+  for result in cursor:
+    ids.append(result)
 
-    cmd = 'INSERT INTO fan_favorites_skater VALUES (:user, :id)'
+  if len(ids)==0:
+    context=dict(error="This is not a valid figure skater name!")
+    return render_template("anotherfile.html", **context)
+  cmd='INSERT INTO fan_favorites_skater VALUES (:user, :id)'
+  try:
     g.conn.execute(text(cmd), user=username, id=str(ids[0])[1])
-    cmd2 = 'SELECT S.name FROM fan_favorites_skater F, Skater S WHERE S.skater_id=F.skater_id GROUP BY S.skater_id ORDER BY COUNT(*) DESC LIMIT 1'
-    cursor = g.conn.execute(text(cmd2))
-    faves = []
-    for result in cursor:
-        faves.append(result[0][0])
-    cursor.close()
-    context = dict(data=faves)
+  except exc.SQLAlchemyError:
+    print("Error deteced")
+    context=dict(error="This person is already in your favorites!")
     return render_template("anotherfile.html", **context)
 
 
@@ -403,15 +397,38 @@ def processPredictions():
   for result in cursor:
     ids.append(result)
   username=request.form['username']
+  usercheck='SELECT * FROM fan F WHERE F.username=:user'
+  cursor=g.conn.execute(text(usercheck),user=username)
+  users=[]
+  for result in cursor:
+    users.append(result)
+  if len(users)==0:
+    context=dict(error="This is not a valid username!")
+    return render_template("pick.html", **context)
   competition = session.get('competition', None)
+    
+  cmd0 = 'SELECT S.skater_id FROM Skater S WHERE S.name=:skater'
+  cursor = g.conn.execute(text(cmd0), skater=mensPick)
+  ids = []
+  for result in cursor:
+   ids.append(result)
+  cursor = g.conn.execute(text(cmd0), skater=pairsPick)
+  for result in cursor:
+   ids.append(result)
+   cursor = g.conn.execute(text(cmd0), skater=womensPick)
+  for result in cursor:
+   ids.append(result)
 
-  '''  cmdMens='INSERT INTO fan_votesin_poll VALUES(:user, :mens, :comp)'
-  g.conn.execute(text(cmdMens), user=username, mens=str(ids[0])[1], comp=1)
-  cmdPairs='INSERT INTO fan_votesin_poll VALUES(:user, :pairs, :comp)'
-  g.conn.execute(text(cmdPairs), user=username, pairs=str(ids[1])[1], comp=1)
-  cmdWomens='INSERT INTO fan_votesin_poll VALUES(:user, :womens, :comp)'
-  g.conn.execute(text(cmdWomens), user=username, womens=str(ids[3])[1], comp=1)
-  '''
+  try:
+    cmdMens='INSERT INTO fan_votesin_poll VALUES(:user, :comp, :mens)'
+    g.conn.execute(text(cmdMens), user=username, mens=str(ids[0])[1], comp=competition)
+    cmdPairs='INSERT INTO fan_votesin_poll VALUES(:user, :comp, :pairs)'
+    g.conn.execute(text(cmdPairs), user=username, pairs=str(ids[1])[1], comp=competition)
+    cmdWomens='INSERT INTO fan_votesin_poll VALUES(:user, :comp, :womens)'
+    g.conn.execute(text(cmdWomens), user=username, womens=str(ids[2])[1], comp=competition)
+  except exc.SQLAlchemyError:
+    context=dict(error="Already voted")
+    return render_template("pick.html", **context)
   cmdMens2='SELECT S.name FROM Skater S, skater_registeredfor_competition R, Competition C, skater_scoresin_competition SC WHERE C.competition_id=:comp AND C.competition_id=R.competition_id AND R.skater_id =S.skater_id AND S.discipline=:discp AND S.skater_id = SC.skater_id GROUP BY S.skater_id ORDER BY AVG(SC.placement) ASC LIMIT 1'
   cursor=g.conn.execute(text(cmdMens2), comp=competition, discp='Mens')
   mensPredicted=[]
@@ -444,27 +461,6 @@ def processPredictions():
     womensRanked.append(result)
   context=dict(mens=mensPick,pairs=pairsPick,womens=womensPick, mensP=mensPredicted, pairsP=pairsPredicted, womensP=womensPredicted, pairsR=pairRanked, mensR=mensRanked, womensR=womensRanked)
   return render_template("pick.html", **context)
-
-
-'''
-cmd0='SELECT S.name FROM Skater S, skater_registeredfor_competition R, competition C WHERE S.skater_id=R.skater_id and C.comp_name=:comp and C.competition_id=R.competition_id'
-  cursor=g.conn.execute(text(cmd0), comp=competition)
-
-
-  ids = []
-  for result in cursor:
-    ids.append(result)
-  cmd='INSERT INTO fan_votes_in_poll VALUES (:username, :poll, :sktr)'
-  g.conn.execute(text(cmd), username=username,
-                 poll=poll_id, sktr=str(ids[0][1]))
-  cmd='SELECT S.name, count(*) FROM fan_votes_in_poll F, Skater S WHERE F.poll_id=:poll AND F.skater_id=S.skater_id GROUP BY S.skater_id ORDER BY COUNT(*) DESC'
-  cursor=g.conn.execute(text(cmd), poll=poll_id)
-  poll_results = []
-  for result in cursor:
-    poll_results.append(result)
-  cursor.close()
-  context = dict(data = poll_results)
-'''
 
 
 if __name__ == "__main__":

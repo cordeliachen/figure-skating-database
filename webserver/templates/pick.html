@@ -11,6 +11,7 @@
   <form method="POST", action="/predict">
   <h1>Pick a winner for each category:</h1>
   <p>Username <input type="text" name="username"></p>
+  <h3>{{error}}</h3>
     {% for key in data %}
     <p> {{key[0]}} </p>
       <select name={{key[0]}}>
