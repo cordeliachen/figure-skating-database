@@ -1,23 +1,20 @@
 <html>
-  <style>
-    body{ 
-      font-size: 15pt;
-      font-family: arial;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
 
 
 <body>
   <form method="POST" action="/pollpicked">
-  <h1>Who do you think is most likely to win:</h1>
+  <h1>Pick a competition to predict:</h1>
   <input type="text" name="competition" list="pollList">
   <datalist id="pollList">
-    {% for c in data %}
-        <OPTION type="text" value="{{c}}">{{c}}</option>
+    {% for key in data %}
+        <OPTION type="text" value="{{key}}">{{data[key]}}</option>
     {% endfor %}
   </datalist>
   <input type="submit" value="Submit" />
   </form>
 
+  <p><a href="/home">Home</a></p>
 </body>
 </html>

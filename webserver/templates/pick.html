@@ -1,23 +1,52 @@
 <html>
-  <style>
-    body{ 
-      font-size: 15pt;
-      font-family: arial;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 
 <body>
-  <form method="POST">
-  <h1>Who do you think is most likely to win:</h1>
+  <form method="POST", action="/predict">
+  <h1>Pick a winner for each category:</h1>
   <p>Username <input type="text" name="username"></p>
-  <SELECT name="skater">
-    {% for s in data %}
-        <OPTION value={{s}}>{{s}}</option>
+  <h3>{{error}}</h3>
+    {% for key in data %}
+    <p> {{key[0]}} </p>
+      <select name={{key[0]}}>
+      {% for c in data[key] %} 
+        <OPTION type="text" value="{{c[0]}}">{{c[0]}}</option>
+      {% endfor %}
+      </select>
     {% endfor %}
     </SELECT>
     <input type="submit" value="Submit" />
   </form>
+  <h2>Predicted Winners Based On Past Placement:</h2>
+  <h3>Pairs:</h3>
+  {% for p in pairsP %}
+    <p> {{p[0]}} </p>
+  {% endfor %}
+  <h3>Mens:</h3>
+  {% for m in mensP %}
+    <p> {{m[0]}} </p>
+  {% endfor %}
+  <h3>Womens:</h3>
+  {% for w in womensP %}
+    <p> {{w[0]}} </p>
+  {% endfor %}
+
+  <h2>Predicted Winners Based on Poll Response:</h2>
+  <h3>Pairs:</h3>
+  {% for p in pairsR %}
+    <p> {{p[0]}} </p>
+  {% endfor %}
+  <h3>Mens:</h3>
+  {% for m in mensR %}
+    <p> {{m[0]}} </p>
+  {% endfor %}
+  <h3>Womens:</h3>
+  {% for w in womensR %}
+    <p> {{w[0]}} </p>
+  {% endfor %}
+
+  <p><a href="/home">Home</a></p>
 
 </body>
 </html>

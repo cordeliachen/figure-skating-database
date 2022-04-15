@@ -1,15 +1,12 @@
 <html>
-  <style>
-    body{ 
-      font-size: 15pt;
-      font-family: arial;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
 
 
 <body>
   <h1>Figure Skating Database</h1>
-  <div>{{data}}</div>
+
+  <h3>Choose your adventure:</h3>
 
   <div>
     {% for n in data %}
@@ -17,18 +14,10 @@
     {% endfor %}
   </div>
 
-<p><a href="/another">Go to the other page</a></p>
+
 
 <p><a href="/search">Search for specific data about competitions, skaters, and elements</a></p>
-
-<form method="POST" action="/add">
-<p>Name of new Skater: <input type="text" name="name"> <input type="submit" value="Search"></p>
-</form>
-
-<form method="POST" action="/sort">
-  <p>Sort by element: <input type="text" name="element"> <input type="submit" value="Sort"></p>
-  </form>
-
+<p><a href="/another">Favorite Some Skaters</a></p>
   <p><a href="/vote">Make your competition predictions</a></p>
 
 </body>

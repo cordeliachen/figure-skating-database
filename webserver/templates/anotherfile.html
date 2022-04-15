@@ -1,10 +1,6 @@
 <html>
-  <style>
-    body{ 
-      font-size: 15pt;
-      font-family: arial;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
 
 
 <body>
@@ -21,6 +17,7 @@
   Who do you love: <input type="text" name="skater"> 
   <input type="submit" value="Submit request" /></p>
 </form>
+<h3>{{error}}</h3>
 <h3>Check Your Favorites</h3>
 <form method="POST" action="/favoritelist">
   <p>Username: <input type="text" name="username">
@@ -35,6 +32,8 @@
   {% endfor %}
 </div>
 </body>
+<p><a href="/home">Home</a></p>
+
 
 
 </html>
