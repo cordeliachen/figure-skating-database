@@ -8,14 +8,14 @@
 
 
 <body>
-  <form method="POST">
+  <form method="POST", action="/predict">
   <h1>Pick a winner for each category:</h1>
   <p>Username <input type="text" name="username"></p>
     {% for key in data %}
     <p> {{key[0]}} </p>
-      <select name="skaters">
+      <select name=banana>
       {% for c in data[key] %} 
-        <OPTION type="text" value="{{c}}">{{c[0]}}</option>
+        <OPTION type="text" value="{{c[0]}}">{{c[0]}}</option>
       {% endfor %}
       </select>
     {% endfor %}
