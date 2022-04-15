@@ -17,7 +17,7 @@
             (short program score + long program score).</p>
         <p>Or you can skip this part (leave it blank) and just search for general data about skaters and competitions.</p>
 
-            <input type="radio" id="sp" name="scores" value="sp">
+            <input type="radio" id="sp" name="scores" value="sp" required>
             <label for="sp">Short Program</label><br>
 
             <input type="radio" id="lp" name="scores" value="lp">
@@ -26,10 +26,10 @@
             <input type="radio" id="ts" name="scores" value="ts">
             <label for="ts">Total Combined Score</label><br>
 
-        <h2>Filters</h2>
+            <input type="radio" id="na" name="scores" value="na">
+            <label for="na">None</label><br>
 
-        <!input type="checkbox" id="mens" name="disciplines" value="Mens">
-        <!label for="mens">Include </label><br>
+        <h2>Filters</h2>
 
         <p>List entities to be included in query result, seperated by a commas and a space. Leave blank to include all entities.</p>
 
@@ -79,8 +79,6 @@
             <input type="checkbox" id={{attribute}} name="column" value={{attribute}}>
             <label for={{attribute}}>{{attribute}}</label><br>
         {% endfor %}
-
-        <! min/max score? placements? limit? age?>
         <input type="submit" value="Submit">
         <input type="reset">
     </form>

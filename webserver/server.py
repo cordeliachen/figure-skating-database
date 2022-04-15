@@ -147,10 +147,10 @@ def search():
         s = request.form.getlist('column')
         print("YOOOO")
 
-        if request.form['scores'] != "":
+        if request.form['scores'] != "na":
             select += "element.skater_id, element.competition_id, SUM(element.score)"
         elif not s:
-            select += "* "
+            select += "*"
         else:
             for i in range(len(s) - 1):
                 select += s[i] + ", "
@@ -214,7 +214,7 @@ def search():
             where += ")"
 
         # group by program
-        if request.form['scores'] != "":
+        if request.form['scores'] != "na":
             group_by = " GROUP BY element.skater_id, element.competition_id"
             if request.form['scores'] == "sp":
                 where += " and not element.in_long"
