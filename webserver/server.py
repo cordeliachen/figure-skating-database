@@ -40,7 +40,7 @@ app = Flask(__name__, template_folder=tmpl_dir)
 DB_USER = "cc4655"
 DB_PASSWORD = "061602"
 
-DB_SERVER = "w4111-4-14.cisxo09blonu.us-east-1.rds.amazonaws.com"
+DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 DATABASEURI = "postgresql://"+DB_USER+":" + \
     DB_PASSWORD+"@"+DB_SERVER+"/proj1part2"
 
@@ -413,7 +413,7 @@ def makePick():
     cursor = g.conn.execute(text(cmd), comp=competition)
     disciplines = {}
     for result in cursor:
-        cmd2 = 'SELECT S.name FROM competition C, Skater S, skater_registeredfor_competition R WHERE S.skater_id=R.skater_id AND R.competition_id=C.competition_id AND C.competition_id=:comp AND S.discipline=:discp'
+        cmd2 = 'SELECT DISTINCT S.name FROM competition C, Skater S, skater_registeredfor_competition R WHERE S.skater_id=R.skater_id AND R.competition_id=C.competition_id AND C.competition_id=:comp AND S.discipline=:discp'
         cursor2 = g.conn.execute(text(cmd2), comp=competition, discp=result[0])
         skaters = []
         for x in cursor2:
@@ -440,6 +440,11 @@ def processPredictions():
     cursor = g.conn.execute(text(find), name=womensPick)
     for result in cursor:
         ids.append(result)
+    dancePick = request.form['Dance']
+    cursor = g.conn.execute(text(find), name=dancePick)
+    for result in cursor:
+        ids.append(result)
+
     username = request.form['username']
     usercheck = 'SELECT * FROM fan F WHERE F.username=:user'
     cursor = g.conn.execute(text(usercheck), user=username)
@@ -462,6 +467,9 @@ def processPredictions():
         cursor = g.conn.execute(text(cmd0), skater=womensPick)
     for result in cursor:
         ids.append(result)
+        cursor = g.conn.execute(text(cmd0), skater=dancePick)
+    for result in cursor:
+        ids.append(result)
 
     try:
         cmdMens = 'INSERT INTO fan_votesin_poll VALUES(:user, :comp, :mens)'
@@ -473,6 +481,9 @@ def processPredictions():
         cmdWomens = 'INSERT INTO fan_votesin_poll VALUES(:user, :comp, :womens)'
         g.conn.execute(text(cmdWomens), user=username,
                        womens=str(ids[2])[1], comp=competition)
+        cmdDance = 'INSERT INTO fan_votesin_poll VALUES(:user, :comp, :dance)'
+        g.conn.execute(text(cmdDance), user=username,
+                       dance=str(ids[3])[1], comp=competition)
     except exc.SQLAlchemyError:
         context = dict(error="Already voted")
         return render_template("pick.html", **context)
@@ -491,6 +502,11 @@ def processPredictions():
     womensPredicted = []
     for result in cursor:
         womensPredicted.append(result)
+    cmdDance2 = "SELECT S.name FROM Skater S, skater_registeredfor_competition R, Competition C, skater_scoresin_competition SC WHERE C.competition_id=:comp AND C.competition_id=R.competition_id AND R.skater_id =S.skater_id AND S.discipline=:discp AND S.skater_id = SC.skater_id GROUP BY S.skater_id ORDER BY AVG(SC.placement) ASC LIMIT 1 "
+    cursor = g.conn.execute(text(cmdDance2), comp=competition, discp='Dance')
+    dancePredicted = []
+    for result in cursor:
+        dancePredicted.append(result)
     cmdPairs3 = 'SELECT S.name FROM Skater S, skater_registeredfor_competition R, fan_votesin_poll P WHERE S.skater_id=R.skater_id and R.competition_id=:comp and S.skater_id=R.skater_id and S.discipline=:discp GROUP BY S.skater_id ORDER BY COUNT(*) DESC LIMIT 1'
     cursor = g.conn.execute(text(cmdPairs3), comp=competition, discp='Pairs')
     pairRanked = []
@@ -506,8 +522,13 @@ def processPredictions():
     womensRanked = []
     for result in cursor:
         womensRanked.append(result)
+    cmdDance3 = 'SELECT S.name FROM Skater S, skater_registeredfor_competition R, fan_votesin_poll P WHERE S.skater_id=R.skater_id and R.competition_id=:comp and S.skater_id=R.skater_id and S.discipline=:discp GROUP BY S.skater_id ORDER BY COUNT(*) DESC LIMIT 1'
+    cursor = g.conn.execute(text(cmdDance3), comp=competition, discp='Dance')
+    danceRanked = []
+    for result in cursor:
+        danceRanked.append(result)
     context = dict(mens=mensPick, pairs=pairsPick, womens=womensPick, mensP=mensPredicted, pairsP=pairsPredicted,
-                   womensP=womensPredicted, pairsR=pairRanked, mensR=mensRanked, womensR=womensRanked)
+                   womensP=womensPredicted, danceP=dancePredicted, pairsR=pairRanked, mensR=mensRanked, womensR=womensRanked, danceR=danceRanked)
     return render_template("pick.html", **context)
 
 

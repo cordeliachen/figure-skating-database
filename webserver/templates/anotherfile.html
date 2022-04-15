@@ -22,13 +22,13 @@
 <form method="POST" action="/favorite">
   <p>Who are you <input type="text" name="username">
   Who do you love: <input type="text" name="skater"> 
-  <input type="submit" value="Submit request" /></p>
+  <input type="submit" value="Favorite" /></p>
 </form>
 <h3>{{error}}</h3>
 <h3>Check Your Favorites</h3>
 <form method="POST" action="/favoritelist">
   <p>Username: <input type="text" name="username">
-  <input type="submit" value="Submit request" /></p>
+  <input type="submit" value="Check" /></p>
 </form>
 <div>
   {% for key in list %}
