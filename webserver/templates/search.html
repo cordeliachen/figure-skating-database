@@ -28,17 +28,18 @@
             <input type="radio" id="ts" name="scores" value="ts">
             <label for="ts">Total Combined Score</label><br>
 
-            <input type="radio" id="none" name="scores" value="none">
-            <label for="none">None</label><br>
-
-
         <p>Specific elements to be included in query result, seperated by a commas ONLY. Leave blank to include all elements.
-            Ignored if "element" is unselected above.
-        </p>
+            Ignored if "element" is unselected above.</p>
         <label for="elements">Elements</label><br><br>
         <input type="text" id="elements" name="elements"><br><br>
 
+
+
         <h2>Filters</h2>
+
+        <!input type="checkbox" id="mens" name="disciplines" value="Mens">
+        <!label for="mens">Include </label><br>
+
         <p>List entities to be included in query result, seperated by a commas and a space. Leave blank to include all entities.</p>
 
             <label for="skaters">Skaters</label>
@@ -69,6 +70,11 @@
         <h2>Result Columns</h2>
         <p>Select the attributes that you want to see from the data that matches the above criteria.</p>
         <p>If nothing is selected, every relevant attribute will be returned.</p>
+        <h3>Element Attributes (only applicable is selected above)</h3>
+        {% for attribute in element_attributes %}
+            <input type="checkbox" id={{attribute}} name="column" value={{attribute}}>
+            <label for={{attribute}}>{{attribute}}</label><br>
+        {% endfor %}
         <h3>Skater Attributes</h3>
         {% for attribute in skater_attributes %}
             <input type="checkbox" id={{attribute}} name="column" value={{attribute}}>

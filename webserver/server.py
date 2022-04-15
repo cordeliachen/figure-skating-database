@@ -39,7 +39,7 @@ app = Flask(__name__, template_folder=tmpl_dir)
 DB_USER = "cc4655"
 DB_PASSWORD = "061602"
 
-DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
+DB_SERVER = "w4111-4-14.cisxo09blonu.us-east-1.rds.amazonaws.com"
 
 DATABASEURI = "postgresql://"+DB_USER+":" + \
     DB_PASSWORD+"@"+DB_SERVER+"/proj1part2"
@@ -128,15 +128,19 @@ def home():
 
 @app.route('/search', methods=('GET', 'POST'))
 def search():
+    element_attributes = ['element.skater_id', 'element.competition_id',
+                          'element.order_performed', 'element.element_name', 'element.score']
     skater_attributes = ['skater.name', 'skater.age',
                          'skater.country', 'skater.discipline']
     competition_attributes = ['competition.comp_name',
                               'competition.comp_year', 'competition.comp_location']
+
     if request.method == 'POST':
         select = "SELECT "
-        frm = " FROM Skater, Competition, skater_scoresin_competition"
+        frm = " FROM Skater, Competition, skater_scoresin_competition, element"
         where = """ WHERE skater.skater_id = skater_scoresin_competition.skater_id and 
-        competition.competition_id = skater_scoresin_competition.competition_id"""
+        competition.competition_id = skater_scoresin_competition.competition_id and
+        skater.skater_id = element.skater_id and competition.competition_id = element.competition_id"""
 
         # modify SELECT
         s = request.form.getlist('column')
@@ -148,9 +152,18 @@ def search():
                 select += s[i] + ", "
             select += s[-1]
 
-        # modify FROM
-
         # modify WHERE
+        # filter elements
+        selected_elements = request.form['elements'].split(", ")
+        print(len(selected_elements))
+        print(selected_elements[0])
+        if selected_elements[0] != "":
+            where += " and (element.element_name = '" + \
+                selected_elements[0] + "'"
+            for element in selected_elements[1:]:
+                where += " or element.element_name = '" + element + "'"
+            where += ")"
+
         # filter skaters
         selected_skaters = request.form['skaters'].split(", ")
         print(len(selected_skaters))
@@ -212,7 +225,8 @@ def search():
 
         return render_template('searchresults.html', results=results)
 
-    return render_template('search.html', skater_attributes=skater_attributes,
+    return render_template('search.html', element_attributes=element_attributes,
+                           skater_attributes=skater_attributes,
                            competition_attributes=competition_attributes)
 
 
