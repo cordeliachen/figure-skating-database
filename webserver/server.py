@@ -144,8 +144,10 @@ def search():
         group_by = ""
 
         # modify SELECT
+        if request.form.getlist('distinct'):
+            select += " DISTINCT "
+
         s = request.form.getlist('column')
-        print("YOOOO")
 
         if request.form['scores'] != "na":
             select += "element.skater_id AS sid, element.competition_id AS cid, SUM(element.score) AS score"
@@ -155,6 +157,49 @@ def search():
             for i in range(len(s) - 1):
                 select += s[i] + ", "
             select += s[-1]
+
+        # modify FROM if considering skaters and competitions not in skater_scoresin_competition
+        if request.form['allentries']:
+            where = ""
+            # query from skaters
+            if request.form['allentries'] == "allskaters":
+                frm = " FROM Skater"
+                # filter skaters
+                selected_skaters = request.form['skaters'].split(", ")
+                if selected_skaters[0] != "":
+                    where = " WHERE (skater.name = '" + \
+                        selected_skaters[0] + "'"
+                    for skater in selected_skaters[1:]:
+                        where += " or skater.name = '" + skater + "'"
+                    where += ")"
+
+                # filter disciplines
+                selected_disciplines = request.form.getlist('disciplines')
+                if selected_disciplines:
+                    # check if already filtered skaters
+                    if selected_skaters[0] != "":
+                        where += " and (skater.discipline = '" + \
+                            selected_disciplines[0] + "'"
+                    else:
+                        where = " WHERE (skater.discipline = '" + \
+                            selected_disciplines[0] + "'"
+                    for discipline in selected_disciplines[1:]:
+                        where += " or skater.discipline = '" + discipline + "'"
+                    where += ")"
+            # query from competitions
+            else:
+                frm = " FROM Competition"
+                selected_skaters = request.form['skaters'].split(", ")
+                selected_comps = request.form['comps'].split(", ")
+                if selected_comps[0] != "":
+                    where = " WHERE competition.comp_name = '" + \
+                        selected_comps[0] + "'"
+                    for comp in selected_comps[1:]:
+                        where += " or competition.comp_name = '" + comp + "'"
+            query = select + frm + where + group_by
+            print(query)
+            results = g.conn.execute(query)
+            return render_template('searchresults.html', results=results)
 
         # modify WHERE
         # filter elements
@@ -175,7 +220,6 @@ def search():
             where += ")"
 
         # filter competitons
-        print("fml")
         selected_comps = request.form['comps'].split(", ")
         if selected_comps[0] != "":
             where += " and (competition.comp_name = '" + \
@@ -185,7 +229,6 @@ def search():
             where += ")"
 
         # filter countries
-        print("fml 2.0")
         selected_countries = request.form['countries'].split(", ")
         if selected_countries[0] != "":
             where += " and (skater.country = '" + selected_countries[0] + "'"
@@ -194,7 +237,6 @@ def search():
             where += ")"
 
         # filter years
-        print("fml 2.0")
         selected_years = request.form['years'].split(", ")
         if selected_years[0] != "":
             where += " and (competition.comp_year = '" + \
@@ -205,7 +247,6 @@ def search():
 
         # filter disciplines
         selected_disciplines = request.form.getlist('disciplines')
-        print("YOOOO")
         if selected_disciplines:
             where += " and (skater.discipline = '" + \
                 selected_disciplines[0] + "'"
@@ -222,6 +263,7 @@ def search():
                 where += " and element.in_long"
 
         query = select + frm + where + group_by
+
         if request.form['scores'] != "na":
             query2 = """SELECT skater.name, competition.comp_name, q.score  
                         FROM (""" + query + """) q, skater, competition 

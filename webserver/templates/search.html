@@ -15,7 +15,7 @@
         <h2>Element, Short Program, Long Program, or Total Combined Score</h2>
         <p>Choose whether to search for specific elements, short program scores, long program scores, or total combined scores
             (short program score + long program score).</p>
-        <p>Or you can skip this part (leave it blank) and just search for general data about skaters and competitions.</p>
+        <p>Or you can skip this part (leave it blank) and just search for general data about elements, skaters, and competitions.</p>
 
             <input type="radio" id="sp" name="scores" value="sp" required>
             <label for="sp">Short Program</label><br>
@@ -31,9 +31,18 @@
 
         <h2>Filters</h2>
 
+        <input type="checkbox" id="distinct" name="distinct" value="distinct">
+        <label for="distinct">Get distinct values</label><br>
+
+        <input type="radio" id="allskaters" name="allentries" value="allskaters">
+        <label for="allskaters">Include non-competing skaters (do not select attributes for elements or competitons)</label><br>
+
+        <input type="radio" id="allcomps" name="allentries" value="allcomps">
+        <label for="allcomps">Include skater-less competitions (do not select attributes for skaters or elements)</label><br>
+
         <p>List entities to be included in query result, seperated by a commas and a space. Leave blank to include all entities.</p>
 
-            <label for="elements" >Elements</label>
+            <label for="elements">Elements (only valid if "None" is selected above)</label>
             <input type="text" id="elements" name="elements" ><br>
                 
             <label for="skaters">Skaters</label>
@@ -61,7 +70,7 @@
             <input type="checkbox" id="mens" name="disciplines" value="Dance">
             <label for="dance">Ice Dance</label><br>
 
-        <h2>Result Columns</h2>
+        <h2>Result Columns (only valid if "None" is selected above)</h2>
         <p>Select the attributes that you want to see from the data that matches the above criteria.</p>
         <p>If nothing is selected, every relevant attribute will be returned.</p>
         <h3>Element Attributes</h3>
