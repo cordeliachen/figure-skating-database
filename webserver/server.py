@@ -408,12 +408,14 @@ def generateList():
 
 @ app.route('/pollpicked', methods=['POST'])
 def makePick():
-    competition = (request.form['competition'])[1]
+    competition = (request.form['competition'])[1:3]
     session['competition'] = competition
+    print(competition)
     cmd = 'SELECT DISTINCT S.discipline FROM Skater S, skater_registeredfor_competition R, competition C WHERE R.skater_id=S.skater_id and :comp=R.competition_id'
     cursor = g.conn.execute(text(cmd), comp=competition)
     disciplines = {}
     for result in cursor:
+        print(result)
         cmd2 = 'SELECT DISTINCT S.name FROM competition C, Skater S, skater_registeredfor_competition R WHERE S.skater_id=R.skater_id AND R.competition_id=C.competition_id AND C.competition_id=:comp AND S.discipline=:discp'
         cursor2 = g.conn.execute(text(cmd2), comp=competition, discp=result[0])
         skaters = []
