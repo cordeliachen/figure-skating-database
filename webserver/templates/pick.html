@@ -1,6 +1,14 @@
-<html>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
+<!doctype html>
+<title>Search for data</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<nav>
+  <h1>Figure skating database</h1>
+  <ul>
+    <li><a href="/home">Home</a>  
+    <li><a href="/another">Another</a>
+    <li><a href="/search">Search</a>
+  </ul>
+</nav>
 
 <body>
   <form method="POST", action="/predict">
@@ -31,6 +39,10 @@
   {% for w in womensP %}
     <p> {{w[0]}} </p>
   {% endfor %}
+  <h3>Dance:</h3>
+  {% for d in danceP %}
+    <p> {{d[0]}} </p>
+  {% endfor %}
 
   <h2>Predicted Winners Based on Poll Response:</h2>
   <h3>Pairs:</h3>
@@ -44,6 +56,10 @@
   <h3>Womens:</h3>
   {% for w in womensR %}
     <p> {{w[0]}} </p>
+  {% endfor %}
+  <h3>Dance:</h3>
+  {% for d in danceR %}
+    <p> {{d[0]}} </p>
   {% endfor %}
 
   <p><a href="/home">Home</a></p>
