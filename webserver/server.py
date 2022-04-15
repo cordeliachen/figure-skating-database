@@ -39,8 +39,7 @@ app = Flask(__name__, template_folder=tmpl_dir)
 DB_USER = "cc4655"
 DB_PASSWORD = "061602"
 
-DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
-
+DB_SERVER = "w4111-4-14.cisxo09blonu.us-east-1.rds.amazonaws.com"
 DATABASEURI = "postgresql://"+DB_USER+":"+DB_PASSWORD+"@"+DB_SERVER+"/proj1part2"
 
 
@@ -120,7 +119,7 @@ def another():
 def add():
   name=request.form['name']
   print(name)
-  cmd = 'SELECT * FROM SKATER S WHERE S.name=:nm'
+  cmd = 'SELECT * FROM SKATER S WHERE S.name= nm'
   cursor=g.conn.execute(text(cmd),nm=name)
   names = []
   for result in cursor:
@@ -131,11 +130,11 @@ def add():
 
 @app.route('/vote')
 def vote():
-  cmd0='SELECT c.comp_name FROM poll_predicts_competition p, competition c where p.competition_id=c.competition_id'
+  cmd0='SELECT (c.comp_name, c.comp_location, c.comp_year) FROM poll_predicts_competition p, competition c where p.competition_id=c.competition_id'
   polls=[]
   cursor=g.conn.execute(text(cmd0))
   for result in cursor:
-      polls.append(result[0])
+      polls.append(result)
   context = dict(data = polls)
   return render_template("poll.html", **context)
 
@@ -207,7 +206,9 @@ def generateList():
 
 @app.route('/pollpicked', methods=['POST'])
 def makePick():
-  competition=request.form['competition']
+  competition=(request.form['competition'])
+  print(competition)
+  session['competition'] = competition
   cmd='SELECT DISTINCT S.discipline FROM Skater S, skater_registeredfor_competition R, competition C WHERE R.skater_id=S.skater_id and C.comp_name=:comp and C.competition_id=R.competition_id'
   cursor=g.conn.execute(text(cmd), comp=competition)
   disciplines={}
@@ -221,6 +222,54 @@ def makePick():
   cursor.close()
   context = dict(data = disciplines)
   return render_template("pick.html", **context)
+
+@app.route('/predict', methods=['POST'])
+def processPredictions():
+  mensPick=request.form['banana']
+  find='SELECT S.skater_id FROM Skater S WHERE S.name=:name'
+  cursor=g.conn.execute(text(find),name=mensPick)
+  ids=[]
+  for result in cursor:
+    ids.append(result)
+  pairsPick=request.form['Pairs']
+  cursor=g.conn.execute(text(find),name=pairsPick)
+  for result in cursor:
+    ids.append(result)
+  womensPick=request.form['Womens']
+  cursor=g.conn.execute(text(find),name=womensPick)
+  for result in cursor:
+    ids.append(result)
+  username=request.form['username']
+  competition = session.get('competition', None)
+
+  '''  cmdMens='INSERT INTO fan_votesin_poll VALUES(:user, :mens, :comp)'
+  g.conn.execute(text(cmdMens), user=username, mens=str(ids[0])[1], comp=1)
+  cmdPairs='INSERT INTO fan_votesin_poll VALUES(:user, :pairs, :comp)'
+  g.conn.execute(text(cmdPairs), user=username, pairs=str(ids[1])[1], comp=1)
+  cmdWomens='INSERT INTO fan_votesin_poll VALUES(:user, :womens, :comp)'
+  g.conn.execute(text(cmdWomens), user=username, womens=str(ids[3])[1], comp=1)
+  '''
+  cmdMens2='SELECT S.name FROM Skater S, skater_registeredfor_competition R, Competition C, skater_scoresin_competition SC WHERE C.comp_name=:comp AND C.competition_id=R.competition_id AND R.skater_id =S.skater_id AND S.discipline=:discp AND S.skater_id = SC.skater_id GROUP BY SKATER ORDER BY AVG (SC.placement) ASC '
+  cursor=g.conn.execute(text(cmdMens2), comp=competition, discp='Mens')
+  mensPredicted=[]
+  for result in cursor:
+    mensPredicted.append(result)
+  cmdPairs2='SELECT S.name FROM Skater S, skater_registeredfor_competition R, Competition C, skater_scoresin_competition SC WHERE C.comp_name=:comp AND C.competition_id=R.competition_id AND R.skater_id =S.skater_id AND S.discipline=:discp AND S.skater_id = SC.skater_id GROUP BY SKATER ORDER BY AVG (SC.placement) ASC '
+  cursor=g.conn.execute(text(cmdPairs2), comp=competition, discp='Pairs')
+  pairsPredicted=[]
+  for result in cursor:
+    pairsPredicted.append(result)
+  cmdWomens2="SELECT S.name FROM Skater S, skater_registeredfor_competition R, Competition C, skater_scoresin_competition SC WHERE C.comp_name=:comp AND C.competition_id=R.competition_id AND R.skater_id =S.skater_id AND S.discipline=:discp AND S.skater_id = SC.skater_id GROUP BY SKATER ORDER BY AVG (SC.placement) ASC "
+  cursor=g.conn.execute(text(cmdWomens2), comp=competition, discp='Womens')
+  womensPredicted=[]
+  for result in cursor:
+    womensPredicted.append(result)
+  context=dict(mens=mensPick,pairs=pairsPick,womens=womensPick, mensP=mensPredicted, pairsP=pairsPredicted, womensP=womensPredicted)
+  return render_template("pick.html", **context)
+
+
+
+
 '''
 cmd0='SELECT S.name FROM Skater S, skater_registeredfor_competition R, competition C WHERE S.skater_id=R.skater_id and C.comp_name=:comp and C.competition_id=R.competition_id'
   cursor=g.conn.execute(text(cmd0), comp=competition)
