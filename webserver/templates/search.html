@@ -16,10 +16,8 @@
         <p>Choose whether to search for specific elements, short program scores, long program scores, or total combined scores
             (short program score + long program score).</p>
         <p>Or you can skip this part (leave it blank) and just search for general data about skaters and competitions.</p>
-            <input type="radio" id="ele" name="scores" value="ele">
-            <label for="ele">Element</label><br>
 
-            <input type="radio" id="sp" name="scores" value="sp">
+            <input type="radio" id="sp" name="scores" value="sp" required>
             <label for="sp">Short Program</label><br>
 
             <input type="radio" id="lp" name="scores" value="lp">
@@ -28,20 +26,16 @@
             <input type="radio" id="ts" name="scores" value="ts">
             <label for="ts">Total Combined Score</label><br>
 
-        <p>Specific elements to be included in query result, seperated by a commas ONLY. Leave blank to include all elements.
-            Ignored if "element" is unselected above.</p>
-        <label for="elements">Elements</label><br><br>
-        <input type="text" id="elements" name="elements"><br><br>
-
-
+            <input type="radio" id="na" name="scores" value="na">
+            <label for="na">None</label><br>
 
         <h2>Filters</h2>
 
-        <!input type="checkbox" id="mens" name="disciplines" value="Mens">
-        <!label for="mens">Include </label><br>
-
         <p>List entities to be included in query result, seperated by a commas and a space. Leave blank to include all entities.</p>
 
+            <label for="elements" >Elements</label>
+            <input type="text" id="elements" name="elements" ><br>
+                
             <label for="skaters">Skaters</label>
             <input type="text" id="skaters" name="skaters"><br>
             
@@ -70,7 +64,7 @@
         <h2>Result Columns</h2>
         <p>Select the attributes that you want to see from the data that matches the above criteria.</p>
         <p>If nothing is selected, every relevant attribute will be returned.</p>
-        <h3>Element Attributes (only applicable is selected above)</h3>
+        <h3>Element Attributes</h3>
         {% for attribute in element_attributes %}
             <input type="checkbox" id={{attribute}} name="column" value={{attribute}}>
             <label for={{attribute}}>{{attribute}}</label><br>
@@ -85,8 +79,6 @@
             <input type="checkbox" id={{attribute}} name="column" value={{attribute}}>
             <label for={{attribute}}>{{attribute}}</label><br>
         {% endfor %}
-
-        <! min/max score? placements? limit? age?>
         <input type="submit" value="Submit">
         <input type="reset">
     </form>

@@ -139,12 +139,16 @@ def search():
         where = """ WHERE skater.skater_id = skater_scoresin_competition.skater_id and 
         competition.competition_id = skater_scoresin_competition.competition_id and
         skater.skater_id = element.skater_id and competition.competition_id = element.competition_id"""
+        group_by = ""
 
         # modify SELECT
         s = request.form.getlist('column')
         print("YOOOO")
-        if not s:
-            select += "* "
+
+        if request.form['scores'] != "na":
+            select += "element.skater_id AS sid, element.competition_id AS cid, SUM(element.score) AS score"
+        elif not s:
+            select += "*"
         else:
             for i in range(len(s) - 1):
                 select += s[i] + ", "
@@ -153,8 +157,6 @@ def search():
         # modify WHERE
         # filter elements
         selected_elements = request.form['elements'].split(", ")
-        print(len(selected_elements))
-        print(selected_elements[0])
         if selected_elements[0] != "":
             where += " and (element.element_name = '" + \
                 selected_elements[0] + "'"
@@ -164,8 +166,6 @@ def search():
 
         # filter skaters
         selected_skaters = request.form['skaters'].split(", ")
-        print(len(selected_skaters))
-        print(selected_skaters[0])
         if selected_skaters[0] != "":
             where += " and (skater.name = '" + selected_skaters[0] + "'"
             for skater in selected_skaters[1:]:
@@ -175,8 +175,6 @@ def search():
         # filter competitons
         print("fml")
         selected_comps = request.form['comps'].split(", ")
-        print(len(selected_comps))
-        print(selected_comps[0])
         if selected_comps[0] != "":
             where += " and (competition.comp_name = '" + \
                 selected_comps[0] + "'"
@@ -187,8 +185,6 @@ def search():
         # filter countries
         print("fml 2.0")
         selected_countries = request.form['countries'].split(", ")
-        print(len(selected_countries))
-        print(selected_comps[0])
         if selected_countries[0] != "":
             where += " and (skater.country = '" + selected_countries[0] + "'"
             for country in selected_countries[1:]:
@@ -198,8 +194,6 @@ def search():
         # filter years
         print("fml 2.0")
         selected_years = request.form['years'].split(", ")
-        print(len(selected_years))
-        print(selected_years[0])
         if selected_years[0] != "":
             where += " and (competition.comp_year = '" + \
                 selected_years[0] + "'"
@@ -217,9 +211,25 @@ def search():
                 where += " or skater.discipline = '" + discipline + "'"
             where += ")"
 
-        query = select + frm + where
-        print(query)
-        results = g.conn.execute(query)
+        # group by program
+        if request.form['scores'] != "na":
+            group_by = " GROUP BY element.skater_id, element.competition_id"
+            if request.form['scores'] == "sp":
+                where += " and not element.in_long"
+            elif request.form['scores'] == "lp":
+                where += " and element.in_long"
+
+        query = select + frm + where + group_by
+        if request.form['scores'] != "na":
+            query2 = """SELECT skater.name, competition.comp_name, q.score  
+                        FROM (""" + query + """) q, skater, competition 
+                        WHERE q.sid = skater.skater_id and
+                        q.cid = competition.competition_id"""
+            print(query2)
+            results = g.conn.execute(query2)
+        else:
+            print(query)
+            results = g.conn.execute(query)
 
         return render_template('searchresults.html', results=results)
 
