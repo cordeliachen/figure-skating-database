@@ -22,7 +22,7 @@
     </SELECT>
     <input type="submit" value="Submit" />
   </form>
-  <h2>Here are our predicted winners!</h2>
+  <h2>Predicted Winners Based On Past Placement:</h2>
   <h3>Pairs:</h3>
   {% for p in pairsP %}
     <p> {{p[0]}} </p>
@@ -33,6 +33,20 @@
   {% endfor %}
   <h3>Womens:</h3>
   {% for w in womensP %}
+    <p> {{w[0]}} </p>
+  {% endfor %}
+
+  <h2>Predicted Winners Based on Poll Response:</h2>
+  <h3>Pairs:</h3>
+  {% for p in pairsR %}
+    <p> {{p[0]}} </p>
+  {% endfor %}
+  <h3>Mens:</h3>
+  {% for m in mensR %}
+    <p> {{m[0]}} </p>
+  {% endfor %}
+  <h3>Womens:</h3>
+  {% for w in womensR %}
     <p> {{w[0]}} </p>
   {% endfor %}
 

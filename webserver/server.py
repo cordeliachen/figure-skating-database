@@ -417,7 +417,22 @@ def processPredictions():
   womensPredicted=[]
   for result in cursor:
     womensPredicted.append(result)
-  context=dict(mens=mensPick,pairs=pairsPick,womens=womensPick, mensP=mensPredicted, pairsP=pairsPredicted, womensP=womensPredicted)
+  cmdPairs3='SELECT S.name FROM Skater S, skater_registeredfor_competition R, fan_votesin_poll P WHERE S.skater_id=R.skater_id and R.competition_id=:comp and S.skater_id=R.skater_id and S.discipline=:discp GROUP BY S.skater_id ORDER BY COUNT(*) DESC LIMIT 1'
+  cursor=g.conn.execute(text(cmdPairs3), comp=competition, discp='Pairs')
+  pairRanked=[]
+  for result in cursor:
+    pairRanked.append(result)
+  cmdMens3='SELECT S.name FROM Skater S, skater_registeredfor_competition R, fan_votesin_poll P WHERE S.skater_id=R.skater_id and R.competition_id=:comp and S.skater_id=R.skater_id and S.discipline=:discp GROUP BY S.skater_id ORDER BY COUNT(*) DESC LIMIT 1'
+  cursor=g.conn.execute(text(cmdMens3), comp=competition, discp='Mens')
+  mensRanked=[]
+  for result in cursor:
+    mensRanked.append(result)
+  cmdWomens3='SELECT S.name FROM Skater S, skater_registeredfor_competition R, fan_votesin_poll P WHERE S.skater_id=R.skater_id and R.competition_id=:comp and S.skater_id=R.skater_id and S.discipline=:discp GROUP BY S.skater_id ORDER BY COUNT(*) DESC LIMIT 1'
+  cursor=g.conn.execute(text(cmdWomens3), comp=competition, discp='Womens')
+  womensRanked=[]
+  for result in cursor:
+    womensRanked.append(result)
+  context=dict(mens=mensPick,pairs=pairsPick,womens=womensPick, mensP=mensPredicted, pairsP=pairsPredicted, womensP=womensPredicted, pairsR=pairRanked, mensR=mensRanked, womensR=womensRanked)
   return render_template("pick.html", **context)
 
 
