@@ -381,9 +381,10 @@ def favorite():
     try:
         g.conn.execute(text(cmd), user=username, id=str(ids[0])[1])
     except exc.SQLAlchemyError:
-        print("Error deteced")
+        print("Error detected")
         context = dict(error="This person is already in your favorites!")
         return render_template("anotherfile.html", **context)
+    return render_template("anotherfile.html")
 
 
 @ app.route('/favoritelist', methods=['POST'])
