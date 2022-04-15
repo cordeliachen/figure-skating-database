@@ -1,10 +1,5 @@
 <html>
-  <style>
-    body{ 
-      font-size: 15pt;
-      font-family: arial;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 
 <body>
@@ -51,6 +46,7 @@
     <p> {{w[0]}} </p>
   {% endfor %}
 
+  <p><a href="/home">Home</a></p>
 
 </body>
 </html>
