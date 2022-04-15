@@ -148,7 +148,7 @@ def search():
         print("YOOOO")
 
         if request.form['scores'] != "na":
-            select += "element.skater_id, element.competition_id, SUM(element.score)"
+            select += "element.skater_id AS sid, element.competition_id AS cid, SUM(element.score) AS score"
         elif not s:
             select += "*"
         else:
@@ -222,8 +222,16 @@ def search():
                 where += " and element.in_long"
 
         query = select + frm + where + group_by
-        print(query)
-        results = g.conn.execute(query)
+        if request.form['scores'] != "na":
+            query2 = """SELECT skater.name, competition.comp_name, q.score  
+                        FROM (""" + query + """) q, skater, competition 
+                        WHERE q.sid = skater.skater_id and
+                        q.cid = competition.competition_id"""
+            print(query2)
+            results = g.conn.execute(query2)
+        else:
+            print(query)
+            results = g.conn.execute(query)
 
         return render_template('searchresults.html', results=results)
 
