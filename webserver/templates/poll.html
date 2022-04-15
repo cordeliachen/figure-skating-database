@@ -12,8 +12,8 @@
   <h1>Who do you think is most likely to win:</h1>
   <input type="text" name="competition" list="pollList">
   <datalist id="pollList">
-    {% for c in data %}
-        <OPTION type="text" value="{{c}}">{{c}}</option>
+    {% for key in data %}
+        <OPTION type="text" value="{{key}}">{{data[key]}}</option>
     {% endfor %}
   </datalist>
   <input type="submit" value="Submit" />
