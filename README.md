@@ -1,2 +1,1 @@
-# Awesome showstopping gorgeous database
-it's pink
+# Welcome to our Figure Skating Web App!
