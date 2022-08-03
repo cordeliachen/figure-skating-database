@@ -1,21 +1,6 @@
 #!/usr/bin/env python2.7
 from sqlalchemy import exc
-
-"""
-Columbia W4111 Intro to databases
-Example webserver
-
-To run locally
-
-    python server.py
-
-Go to http://localhost:8111 in your browser
-
-
-A debugger such as "pdb" may be helpful for debugging.
-Read about it online.
-"""
-
+from config import host, port, database, user, password
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
@@ -25,30 +10,8 @@ tmpl_dir = os.path.join(os.path.dirname(
     os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
-
-# XXX: The Database URI should be in the format of:
-#
-#     postgresql://USER:PASSWORD@<IP_OF_POSTGRE_SQL_SERVER>/<DB_NAME>
-#
-# For example, if you had username ewu2493, password foobar, then the following line would be:
-#
-#     DATABASEURI = "postgresql://ewu2493:foobar@<IP_OF_POSTGRE_SQL_SERVER>/postgres"
-#
-# For your convenience, we already set it to the class database
-
-# Use the DB credentials you received by e-mail
-DB_USER = "cc4655"
-DB_PASSWORD = "061602"
-
-DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
-DATABASEURI = "postgresql://"+DB_USER+":" + \
-    DB_PASSWORD+"@"+DB_SERVER+"/proj1part2"
-
-
-#
-# This line creates a database engine that knows how to connect to the URI above
-#
-engine = create_engine(DATABASEURI)
+conn_str = "postgresql://"+user+":"+password+"@"+host+"/"+database
+engine = create_engine(conn_str)
 
 
 @app.before_request
