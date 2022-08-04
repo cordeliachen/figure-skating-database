@@ -1,3 +1,4 @@
+webserver/config.py
 webserver/__pycache__/config.cpython-38.pyc
 webserver/__pycache__/server.cpython-38.pyc
 webserver/env/pyvenv.cfg
